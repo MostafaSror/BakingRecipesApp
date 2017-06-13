@@ -27,6 +27,8 @@ public class RecipeDetailsActivity extends AppCompatActivity implements LoaderMa
     StepsListViewAdaptor ingredientsListViewAdaptor;
     ListView IngredientsList;
 
+    boolean isTablet;
+
     private final static int SHOW_BAKING_STEPS_LOADER = 15 ;
     private final static int SHOW_INGREDIENTS_LOADER = 25;
 
@@ -34,6 +36,13 @@ public class RecipeDetailsActivity extends AppCompatActivity implements LoaderMa
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_recipe_details);
+
+        if (findViewById(R.id.player_fragment_container) != null){
+            isTablet = true;
+        }else {
+            isTablet = false;
+        }
+
         final int recipe_no = getIntent().getIntExtra(Intent.EXTRA_INTENT,0);
 
         stepsListViewAdaptor = new StepsListViewAdaptor(this, null, 0);
@@ -67,15 +76,38 @@ public class RecipeDetailsActivity extends AppCompatActivity implements LoaderMa
                 Cursor cursor = (Cursor) adapterView.getItemAtPosition(position);
                 if (cursor != null) {
                     if(cursor.getString(cursor.getColumnIndex(DBContract.StepsEntries.COLUMN_VIDEOURL)) != null){
-                        Intent intent = new Intent(RecipeDetailsActivity.this , PlayerActivity.class);
-                        intent.putExtra(DBContract.StepsEntries.COLUMN_VIDEOURL,
-                                cursor.getString(cursor.getColumnIndex(DBContract.StepsEntries.COLUMN_VIDEOURL)));
-                        startActivity(intent);
+                        if(isTablet){
+                            Bundle args = new Bundle();
+                            args.putString(DBContract.StepsEntries.COLUMN_VIDEOURL,
+                                    cursor.getString(cursor.getColumnIndex(DBContract.StepsEntries.COLUMN_VIDEOURL)));
+                            args.putString(DBContract.StepsEntries.COLUMN_DESCRIPTION,
+                                    cursor.getString(cursor.getColumnIndex(DBContract.StepsEntries.COLUMN_DESCRIPTION)));
+                            PlayerFragment fragment = new PlayerFragment();
+                            fragment.setArguments(args);
+                            getSupportFragmentManager().beginTransaction().add(R.id.player_fragment_container,fragment).commit();
+
+                        }else{
+                            Intent intent = new Intent(RecipeDetailsActivity.this , PlayerActivity.class);
+                            intent.putExtra(DBContract.StepsEntries.COLUMN_VIDEOURL,
+                                    cursor.getString(cursor.getColumnIndex(DBContract.StepsEntries.COLUMN_VIDEOURL)));
+                            startActivity(intent);
+                        }
                     }else if(cursor.getString(cursor.getColumnIndex(DBContract.StepsEntries.COLUMN_THUMBNAILURL)) != null){
-                        Intent intent = new Intent(RecipeDetailsActivity.this , PlayerActivity.class);
-                        intent.putExtra(DBContract.StepsEntries.COLUMN_VIDEOURL,
-                                cursor.getString(cursor.getColumnIndex(DBContract.StepsEntries.COLUMN_THUMBNAILURL)));
-                        startActivity(intent);
+                        if(isTablet){
+                            Bundle args = new Bundle();
+                            args.putString(DBContract.StepsEntries.COLUMN_VIDEOURL,
+                                    cursor.getString(cursor.getColumnIndex(DBContract.StepsEntries.COLUMN_VIDEOURL)));
+                            args.putString(DBContract.StepsEntries.COLUMN_DESCRIPTION,
+                                    cursor.getString(cursor.getColumnIndex(DBContract.StepsEntries.COLUMN_DESCRIPTION)));
+                            PlayerFragment fragment = new PlayerFragment();
+                            fragment.setArguments(args);
+                            getSupportFragmentManager().beginTransaction().add(R.id.player_fragment_container,fragment).commit();
+                        }else {
+                            Intent intent = new Intent(RecipeDetailsActivity.this, PlayerActivity.class);
+                            intent.putExtra(DBContract.StepsEntries.COLUMN_VIDEOURL,
+                                    cursor.getString(cursor.getColumnIndex(DBContract.StepsEntries.COLUMN_THUMBNAILURL)));
+                            startActivity(intent);
+                        }
                     }else{
                         Toast.makeText(RecipeDetailsActivity.this, "This step has no video", Toast.LENGTH_SHORT).show();
                     }
